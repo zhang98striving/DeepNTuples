@@ -46,7 +46,7 @@
 #include <algorithm>
 #include <iterator>
 #include <map>
-
+#include <cmath>
 //trash?
 
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -380,7 +380,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         if ( cand_timeError > 0. && abs(cand_time) < 1 ) {
           jet_timeNtk += 1;
-	  jet_timeError+=cand_timeError;
+	  jet_timeError+=cand_timeError * cand_timeError;
           jet_time += cand_time;
         }
 
@@ -388,9 +388,12 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
       if ( jet_timeNtk > 0 ) {
         jet_time = jet_time/jet_timeNtk;
+	jet_timeError = sqrt(jet_timeError)/jet_timeNtk;
       }
-      else jet_time = -1;
-
+      else{
+	jet_time = -1;
+	jet_timeError = -1;
+      }
       jet_time_ = jet_time;
 //$$
     //std::cout << "Jet done" << std::endl;

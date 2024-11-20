@@ -548,10 +548,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             cand_timeError = -1;
             auto track = PackedCandidate_->bestTrack();
             if ( track && EventTime > -1 ) {
-              //if ( track->covt0t0() > 0. && abs(track->t0()) < 1 ) {
 	      if ( PackedCandidate_->timeError()>0. && abs(PackedCandidate_->time()) < 1 ) {  
-	        //track_time = track->t0();
-	        //track_timeerror=track->covt0t0();
 		cand_time = PackedCandidate_->time();
                 cand_timeError = PackedCandidate_->timeError();
 	      }

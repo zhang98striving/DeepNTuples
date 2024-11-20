@@ -24,6 +24,8 @@
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "TVector3.h"
 
+#include <cmath>
+
 class TrackInfoBuilder{
 public:
   TrackInfoBuilder(edm::ESHandle<TransientTrackBuilder> & build):
@@ -305,8 +307,8 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 	            if (dphi > 3.141593 ) dphi -= 2.*3.141593;
 	            if (dpt < 0.01 && deta < 0.01 && dphi < 0.01) {
                       vertex_timeNtk    += 1;
-		      vertex_timeerror  +=cand_timeError;
-                      vertex_time       = cand_time;
+		      vertex_timeerror  += cand_timeError * cand_timeError;
+                      vertex_time       += cand_time;
 //   std::cout << "  => matched track " << it << " to " << i << " time " << cand_time << std::endl;
 	            }
 		  } // end loop on all tracks in jet
@@ -314,6 +316,7 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 	      } // end loop on SVs in jet
               if ( vertex_timeNtk > 0 ) {
                 vertex_time = vertex_time/vertex_timeNtk ;
+		vertex_timeerror = sqrt(vertex_timeerror)/vertex_timeNtk ;
 	      }
               else{
     	      vertex_time = -1;
