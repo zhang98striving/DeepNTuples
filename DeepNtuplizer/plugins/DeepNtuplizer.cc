@@ -245,8 +245,9 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   float PVtime      = (pv)[0].t();
   float PVtimeError = (pv)[0].tError();
 //$$
-  float event_time       = 0;
+  float event_time    = 0;
   float event_timeNtk = 0;
+  float event_timeWeight = 0;
 
   edm::View<pat::Jet>::const_iterator jetIter;
 
@@ -296,14 +297,20 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         float track_dz  = track->dz(pv->position());
 	float cand_time = PackedCandidate->time();
 	float cand_timeError = PackedCandidate->timeError();
+
+	// time_weight
+	float track_pt    = track->pt();
+        float time_weight = track_pt * track_pt;
+	// 
         if ( cand_timeError > 0. && abs(cand_time) < 1 
 	     && abs(track_dxy) < 0.05 && abs(track_dz) < 0.10 ) {
           event_timeNtk    += 1;
-          event_time	   += cand_time;
+	  event_timeWeight += time_weight;
+          event_time	   += cand_time * time_weight;
         }
       }
     }
-    if ( event_timeNtk > 0 ) event_time /= event_timeNtk;
+    if ( event_timeNtk > 0 ) event_time /= event_timeWeight;
       else                     event_time = -1;
   }
   else {
@@ -360,7 +367,8 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       float jet_time	   = 0;
       float jet_timeNtk    = 0;
       float jet_timeError  = 0;
-
+      float jet_timeWeight = 0;
+      
       int  nSV = -2;
       const reco::CandSecondaryVertexTagInfo *candSVTagInfo = jet.tagInfoCandSecondaryVertex("pfInclusiveSecondaryVertexFinder");
       if ( candSVTagInfo != nullptr ) nSV = candSVTagInfo->nVertices();
@@ -376,19 +384,24 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         auto track = PackedCandidate->bestTrack();
       if ( !track ) continue;
 	float cand_time = PackedCandidate->time();
-        float cand_timeError = PackedCandidate->timeError(); 
+        float cand_timeError = PackedCandidate->timeError();
+	
+	// time_weight	
+	float track_pt    = track->pt();
+        float time_weight = track_pt * track_pt;; 
 
         if ( cand_timeError > 0. && abs(cand_time) < 1 ) {
           jet_timeNtk += 1;
-	  jet_timeError+=cand_timeError * cand_timeError;
-          jet_time += cand_time;
+	  jet_timeWeight += time_weight;
+	  jet_timeError+=cand_timeError * cand_timeError * time_weight * time_weight;
+          jet_time += cand_time * time_weight;
         }
 
 	}  // end loop on tracks in jets
 
       if ( jet_timeNtk > 0 ) {
-        jet_time = jet_time/jet_timeNtk;
-	jet_timeError = sqrt(jet_timeError)/jet_timeNtk;
+        jet_time = jet_time/jet_timeWeight;
+	jet_timeError = sqrt(jet_timeError)/jet_timeWeight;
       }
       else{
 	jet_time = -1;

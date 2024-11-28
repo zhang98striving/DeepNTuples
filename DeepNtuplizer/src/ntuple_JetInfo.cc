@@ -594,10 +594,12 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     jet_mass_ = jet.mass();
     jet_energy_ = jet.energy();
 
-    float jet_time        = 0;
-    float jet_timeError = 0;
+    float jet_time       = 0;
+    float jet_timeError  = 0;
     float jet_timeNtk    = 0;
     float jet_timesig    = 0;
+    float jet_timeWeight = 0;
+
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++) {
       const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
       if ( !PackedCandidate ) continue;
@@ -606,15 +608,21 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
       if ( !track ) continue;
         float cand_time = PackedCandidate->time();
         float cand_timeError = PackedCandidate->timeError();
+	
+	//time_weight
+	float track_pt    = track->pt();
+        float time_weight = track_pt * track_pt;
+
         if ( cand_timeError > 0. && abs(cand_time) < 1 ) {
           jet_timeNtk += 1;
-          jet_timeError += cand_timeError * cand_timeError;
-          jet_time += cand_time ;
+	  jet_timeWeight += time_weight;
+          jet_timeError += cand_timeError * cand_timeError * time_weight * time_weight;
+          jet_time += cand_time * time_weight;
         }
     }
     if ( jet_timeNtk > 0 ) {
-        jet_time = jet_time / jet_timeNtk;
-	jet_timeError = sqrt(jet_timeError) / jet_timeNtk;
+        jet_time = jet_time / jet_timeWeight;
+	jet_timeError = sqrt(jet_timeError) / jet_timeWeight;
     }
     else{
 	jet_time = -1;

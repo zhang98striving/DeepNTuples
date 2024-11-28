@@ -275,6 +275,7 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
             float vertex_timeerror  = 0;
             float vertex_timeNtk    = 0;
             float vertex_timesig    = 0;
+	    float vertex_timeWeight = 0;
 
             if ( nSV > 0 && sv.pt() > 0. ) {
 	      for (unsigned int isv=0; isv<candSVTagInfo->nVertices(); ++isv) {
@@ -298,7 +299,11 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
                     //float track_timeError = track->covt0t0();
                     float cand_time = PackedCandidate->time();
                     float cand_timeError = PackedCandidate->timeError(); 
-		    
+	  	    
+		    // time_weight		    
+                    float track_pt    = track->pt();
+                    float time_weight = track_pt * track_pt;
+
 		  if (!( cand_timeError > 0. && abs(cand_time) < 1 )) continue;
 
 	            float dpt  = TMath::Abs(candSVTagInfo->vertexTracks(isv)[it]->pt()  / track->pt() - 1.);
@@ -307,16 +312,17 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 	            if (dphi > 3.141593 ) dphi -= 2.*3.141593;
 	            if (dpt < 0.01 && deta < 0.01 && dphi < 0.01) {
                       vertex_timeNtk    += 1;
-		      vertex_timeerror  += cand_timeError * cand_timeError;
-                      vertex_time       += cand_time;
+		      vertex_timeWeight += time_weight;
+		      vertex_timeerror  += cand_timeError * cand_timeError * time_weight * time_weight;
+                      vertex_time       += cand_time * time_weight;
 //   std::cout << "  => matched track " << it << " to " << i << " time " << cand_time << std::endl;
 	            }
 		  } // end loop on all tracks in jet
 		} // end loop on tracks from SV in jet
 	      } // end loop on SVs in jet
               if ( vertex_timeNtk > 0 ) {
-                vertex_time = vertex_time/vertex_timeNtk ;
-		vertex_timeerror = sqrt(vertex_timeerror)/vertex_timeNtk ;
+                vertex_time = vertex_time/vertex_timeWeight ;
+		vertex_timeerror = sqrt(vertex_timeerror)/vertex_timeWeight ;
 	      }
               else{
     	      vertex_time = -1;
