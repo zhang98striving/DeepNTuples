@@ -230,6 +230,11 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"Cpfcan_vertex_rho",&Cpfcan_vertex_rho_,"Cpfcan_vertex_rho_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_vertex_phirel",&Cpfcan_vertex_phirel_,"Cpfcan_vertex_phirel_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_vertex_etarel",&Cpfcan_vertex_etarel_,"Cpfcan_vertex_etarel_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_vertex_time",&Cpfcan_vertex_time_, "Cpfcan_vertex_time_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_vertex_z",&Cpfcan_vertex_z_, "Cpfcan_vertex_z_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_pv_time",&Cpfcan_pv_time_, "Cpfcan_pv_time_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_pv_z",&Cpfcan_pv_z_, "Cpfcan_pv_z_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_z",&Cpfcan_z_, "Cpfcan_z_[n_Cpfcand_]/F");
 
     addBranch(tree,"Cpfcan_BtagPf_trackMomentum",&Cpfcan_BtagPf_trackMomentum_,"Cpfcan_BtagPf_trackMomentum_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_BtagPf_trackEta",&Cpfcan_BtagPf_trackEta_,"Cpfcan_BtagPf_trackEta_[n_Cpfcand_]/F");
@@ -481,7 +486,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
             Cpfcan_dz_[fillntupleentry] = PackedCandidate_->dz();
             Cpfcan_VTX_ass_[fillntupleentry] = PackedCandidate_->pvAssociationQuality();
-
+  	    
+	    
             Cpfcan_fromPV_[fillntupleentry] = PackedCandidate_->fromPV();
 
             float tempdontopt=PackedCandidate_->vx();
@@ -499,8 +505,11 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_vertex_phirel_[fillntupleentry]=reco::deltaPhi(PackedCandidate_->vertex().phi(),jet.phi());
             Cpfcan_vertex_etarel_[fillntupleentry]=etasign*(PackedCandidate_->vertex().eta()-jet.eta());
             Cpfcan_vertexRef_mass_[fillntupleentry]=PackedCandidate_->vertexRef()->p4().M();
-
-
+            Cpfcan_vertex_time_[fillntupleentry]=PackedCandidate_->vertexRef()->t();
+            Cpfcan_vertex_z_[fillntupleentry]=PackedCandidate_->vertexRef()->z();
+            Cpfcan_pv_time_[fillntupleentry]=PackedCandidate_->dtime();
+            Cpfcan_pv_z_[fillntupleentry]=pv.z();
+            Cpfcan_z_[fillntupleentry] = PackedCandidate_->p4().z();
             Cpfcan_puppiw_[fillntupleentry] = PackedCandidate_->puppiWeight();
 
 

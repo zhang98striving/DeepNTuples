@@ -78,6 +78,12 @@ private:
     float Cpfcan_vertex_phirel_[max_pfcand_];
     float Cpfcan_vertex_etarel_[max_pfcand_];
     float Cpfcan_vertexRef_mass_[max_pfcand_];
+    float Cpfcan_vertex_time_[max_pfcand_];
+    float Cpfcan_vertex_z_[max_pfcand_];
+
+    float Cpfcan_pv_time_[max_pfcand_];
+    float Cpfcan_pv_z_[max_pfcand_];
+    float Cpfcan_z_[max_pfcand_];
     // covariance
     float  Cpfcan_dz_[max_pfcand_];
     float  Cpfcan_dxy_[max_pfcand_];
