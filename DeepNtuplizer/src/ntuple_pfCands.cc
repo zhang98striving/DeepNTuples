@@ -236,6 +236,10 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"Cpfcan_pv_z",&Cpfcan_pv_z_, "Cpfcan_pv_z_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_z",&Cpfcan_z_, "Cpfcan_z_[n_Cpfcand_]/F");
 
+    addBranch(tree,"Cpfcan_trk_z",&Cpfcan_trk_z_, "Cpfcan_trk_z_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_time",&Cpfcan_trk_time_, "Cpfcan_trk_time_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_timeerror",&Cpfcan_trk_timeerror_, "Cpfcan_trk_timeerror_[n_Cpfcand_]/F");
+
     addBranch(tree,"Cpfcan_BtagPf_trackMomentum",&Cpfcan_BtagPf_trackMomentum_,"Cpfcan_BtagPf_trackMomentum_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_BtagPf_trackEta",&Cpfcan_BtagPf_trackEta_,"Cpfcan_BtagPf_trackEta_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_BtagPf_trackEtaRel",&Cpfcan_BtagPf_trackEtaRel_,"Cpfcan_BtagPf_trackEtaRel_[n_Cpfcand_]/F");
@@ -511,6 +515,10 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_pv_z_[fillntupleentry]=pv.z();
             Cpfcan_z_[fillntupleentry] = PackedCandidate_->p4().z();
             Cpfcan_puppiw_[fillntupleentry] = PackedCandidate_->puppiWeight();
+            
+	    Cpfcan_trk_z_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->vz() : -999;
+            Cpfcan_trk_time_[fillntupleentry] = (PackedCandidate_->bestTrack()) ? PackedCandidate_->bestTrack()->t0() : -1;
+            Cpfcan_trk_timeerror_[fillntupleentry] = (PackedCandidate_->bestTrack()!=nullptr) ? PackedCandidate_->bestTrack()->covt0t0() : -1;
 
 
             /*
