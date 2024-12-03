@@ -33,6 +33,7 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 
 // for ivf
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -164,7 +165,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 
   jetinfo->setUseHerwigCompatibleMatching(useHerwigCompatibleMatching);
   jetinfo->setIsHerwig(isHerwig);
-
+  jetinfo->setgenVtxPositionToken(consumes<ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>, ROOT::Math::DefaultCoordinateSystemTag>>(iConfig.getParameter<edm::InputTag>("genvtx_pos")));
+  jetinfo->setgenVtxTimeToken(consumes<float>(iConfig.getParameter<edm::InputTag>("genvtx_t")));
   jetinfo->setGenJetMatchReclusterToken(consumes<edm::Association<reco::GenJetCollection>>(iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" )));
   jetinfo->setGenJetMatchWithNuToken(consumes<edm::Association<reco::GenJetCollection>>(iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
   jetinfo->setGenJetMatchAllowDuplicatesToken(consumes<edm::Association<reco::GenJetCollection>>(iConfig.getParameter<edm::InputTag>( "genJetMatchAllowDuplicates" ))); 

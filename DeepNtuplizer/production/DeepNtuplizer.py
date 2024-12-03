@@ -144,11 +144,12 @@ else :
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-if options.phase2:
-    usePuppi = True
-    pvSource = 'offlineSlimmedPrimaryVertices4D'
-else: 
-    pvSource = 'offlineSlimmedPrimaryVertices'
+#if options.phase2:
+#    usePuppi = True
+#    pvSource = 'offlineSlimmedPrimaryVertices4D'
+#else: 
+#    pvSource = 'offlineSlimmedPrimaryVertices'
+pvSource = cms.InputTag("offlineSlimmedPrimaryVertices")
 if usePuppi:
     jet_collection = 'slimmedJetsPuppi'
 else:
@@ -236,13 +237,15 @@ process.genJetSequence = cms.Sequence(process.packedGenParticlesForJetsNoNu*proc
 # Very Loose IVF SV collection
 from PhysicsTools.PatAlgos.tools.helpers import loadWithPrefix
 loadWithPrefix(process, 'RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff', "looseIVF")
-process.looseIVFinclusiveCandidateVertexFinder.primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+#process.looseIVFinclusiveCandidateVertexFinder.primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+process.looseIVFinclusiveCandidateVertexFinder.primaryVertices = pvSource
 process.looseIVFinclusiveCandidateVertexFinder.tracks = cms.InputTag("packedPFCandidates")
 process.looseIVFinclusiveCandidateVertexFinder.vertexMinDLen2DSig = cms.double(0.)
 process.looseIVFinclusiveCandidateVertexFinder.vertexMinDLenSig = cms.double(0.)
 process.looseIVFinclusiveCandidateVertexFinder.fitterSigmacut = 20
 
-process.looseIVFcandidateVertexArbitrator.primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+#process.looseIVFcandidateVertexArbitrator.primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+process.looseIVFcandidateVertexArbitrator.primaryVertices = pvSource
 process.looseIVFcandidateVertexArbitrator.tracks = cms.InputTag("packedPFCandidates")
 process.looseIVFcandidateVertexArbitrator.secondaryVertices = cms.InputTag("looseIVFcandidateVertexMerger")
 process.looseIVFcandidateVertexArbitrator.fitterSigmacut = 20

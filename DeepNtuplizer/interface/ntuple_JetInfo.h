@@ -14,6 +14,8 @@
 #include <map>
 #include <string>
 
+#include "DataFormats/Math/interface/Point3D.h"
+
 /*
  * For global jet info such as eta, pt, gen info
  */
@@ -53,6 +55,15 @@ public:
     void setGenJetMatchReclusterToken(
             edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchReclusterToken) {
         genJetMatchReclusterToken_ = genJetMatchReclusterToken;
+    }
+
+    void setgenVtxPositionToken(edm::EDGetTokenT<ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>, ROOT::Math::DefaultCoordinateSystemTag>> genVtxPositionToken) {
+        //std::cout<<"tokens are set"<<std::endl;
+        genVtxPositionToken_ = genVtxPositionToken;
+        //std::cout<<"tokens set"<<std::endl;
+    }
+    void setgenVtxTimeToken( edm::EDGetTokenT<float> genVtxTimeToken) {
+        genVtxTimeToken_ = genVtxTimeToken;
     }
 
     void setGenJetMatchWithNuToken(
@@ -104,8 +115,7 @@ public:
     edm::Handle<edm::ValueMap<float>> ptDHandle;
     edm::Handle<edm::ValueMap<float>> axis2Handle;
     edm::Handle<edm::ValueMap<int>> multHandle;
-
-
+    
     edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchReclusterToken_;
     edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchWithNuToken_;
     edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchAllowDuplicatesToken_;
@@ -151,6 +161,7 @@ public:
     std::vector<TLorentzVector> genElectronsFromResonance4V_;
     std::vector<TLorentzVector> tau_gen_visible_;
     std::vector<TLorentzVector> tau_gen_;
+    std::vector<TLorentzVector> genvtx_;
     std::vector<int> tau_gen_charge_;
     std::vector<unsigned int> tau_gen_nch_;
     std::vector<unsigned int> tau_gen_np0_;
@@ -166,7 +177,8 @@ public:
     std::vector<reco::GenParticle> Bhadron_;
     std::vector<reco::GenParticle> Bhadron_daughter_;
 
-
+    edm::EDGetTokenT<float> genVtxTimeToken_;
+    edm::EDGetTokenT<ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>, ROOT::Math::DefaultCoordinateSystemTag>> genVtxPositionToken_;
 
     bool useherwcompat_matching_;
     bool isherwig_;
@@ -213,9 +225,20 @@ public:
     int isPhysTau_;
     int isPhysPU_;
  
+     //genvtex
+    static constexpr size_t max_vtx=50;
+    float genvtx_time_;
+    float genvtx_z_;
+    float genvtx_t;
+    float genvtx_z;
+    
     // global variables
-    float npv_;
+    int npv_;
+    int pv_num_;
     float npv_0_z_;
+    float pu_z_[max_vtx];
+    float pu_time_[max_vtx];
+    float pu_pthats_[max_vtx];
     float PU_rho_;
     float ntrueInt_;
     float rho_;

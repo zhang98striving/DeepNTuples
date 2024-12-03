@@ -400,6 +400,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     const float jet_uncorr_e=jet.correctedJet("Uncorrected").energy();
 
     TrackInfoBuilder trackinfo(builder);
+    std::cout<<"numberOfDaughters="<< jet.numberOfDaughters()<<std::endl;//2024.12.2
     //create collection first, to be able to do some sorting
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
         const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
@@ -425,8 +426,17 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     n_Npfcand_ = std::min(sortedneutrals.size(),max_pfcand_);
 		sortedchargedindices=sorting::invertSortingVector(sortedcharged);
 		sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
-
+	
+    int n_jetDaughter = 0;//2024.12.2
+    int n_ChargedCand_reject = 0; //2024.12.2
+    int n_ChargedCand = 0; //2024.12.2
+    int n_iftrack_reject = 0; //2024.12.2
+    int n_iftrack = 0; //2024.12.2
+    int n_PackedCand_reject =0;
+    int n_PackedCand =0;
+    
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
+	n_jetDaughter ++; //2024.12.2
         const pat::PackedCandidate* PackedCandidate_ = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
         //const auto& PackedCandidate_=s.get();
         if(!PackedCandidate_) continue;
@@ -461,8 +471,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	  pdgid_ = 7.0;
 	}
 
-        if(PackedCandidate_->charge()!=0 ){
-
+        if(PackedCandidate_->charge()!=0 ){ //2024.12.2
+	    n_ChargedCand ++; //2024.12.2
             size_t fillntupleentry= sortedchargedindices.at(i);
             if(fillntupleentry>=max_pfcand_) continue;
 
@@ -565,11 +575,17 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             cand_timeError = -1;
             auto track = PackedCandidate_->bestTrack();
 	    //if ( track && EventTime > -1 ) {
-	    if ( track ) {  
+
+	    //2024.12.2
+	    if (!track){n_iftrack_reject ++;}
+	    else{
+	      n_iftrack ++;  
 	      if ( PackedCandidate_->timeError()>0. && abs(PackedCandidate_->time()) < 1 ) {  
+		n_PackedCand ++;
 		cand_time = PackedCandidate_->time();
                 cand_timeError = PackedCandidate_->timeError();
 	      }
+	      else{n_PackedCand_reject++;}
 	    }
             Cpfcan_time_[fillntupleentry] = cand_time;
             Cpfcan_timeerror_[fillntupleentry] = cand_timeError;
@@ -862,8 +878,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             }
         }
         else{// neutral candidates
-
-
+            n_ChargedCand_reject ++; //2024.12.2
+            
             size_t fillntupleentry= sortedneutralsindices.at(i);
             if(fillntupleentry>=max_pfcand_) continue;
 
@@ -905,6 +921,12 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         std::cout << Npfcan_drminsv_[i] << " " << Npfcan_ptrel_[i]<<std::endl;
     }
      */
+    
+    std::cout<<"n_ChargedCand_reject="<<n_ChargedCand_reject<<"    n_ChargedCand="<<n_ChargedCand<<std::endl;	
+    std::cout<<"n_iftrack_reject="<<n_iftrack_reject<<"    n_iftrack="<<n_iftrack<<std::endl;;
+    std::cout<<"n_PackedCand_reject="<<n_PackedCand_reject<<"    n_PackedCand="<<n_PackedCand<<std::endl; 
+    std::cout<<"n_jetDaughter=="<<n_jetDaughter<<std::endl<<std::endl;
+
 
     nCpfcand_=n_Cpfcand_;
     nNpfcand_=n_Npfcand_;
