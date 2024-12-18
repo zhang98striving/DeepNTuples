@@ -84,12 +84,27 @@ private:
     float Cpfcan_pv_time_[max_pfcand_];
     float Cpfcan_pv_z_[max_pfcand_];
     float Cpfcan_z_[max_pfcand_];
-
+    
+    float  Cpfcan_trk_pt_[max_pfcand_];
+    float  Cpfcan_trk_px_[max_pfcand_];
+    float  Cpfcan_trk_py_[max_pfcand_];
+    float  Cpfcan_trk_pz_[max_pfcand_];
+    float  Cpfcan_trk_p_[max_pfcand_]; /// momentum vector magnitude
+    float  Cpfcan_trk_p2_[max_pfcand_]; /// momentum vector magnitude square
+    float  Cpfcan_trk_beta_[max_pfcand_]; /// velocity at the reference point in natural units
+    float  Cpfcan_trk_x_[max_pfcand_];
+    float  Cpfcan_trk_y_[max_pfcand_];
     float  Cpfcan_trk_z_[max_pfcand_];
+    float  Cpfcan_trk_eta_[max_pfcand_];
+    float  Cpfcan_trk_phi_[max_pfcand_];
+    float  Cpfcan_trk_theta_[max_pfcand_];
+    
     float  Cpfcan_trk_time_[max_pfcand_];
     float  Cpfcan_trk_timeerror_[max_pfcand_];
+    
     float  Cpfcan_sv_time_[max_pfcand_];
     float  Cpfcan_sv_z_[max_pfcand_];
+    
     float  Npfcan_vertex_time_[max_pfcand_];
     float  Npfcan_pv_time_[max_pfcand_];
 

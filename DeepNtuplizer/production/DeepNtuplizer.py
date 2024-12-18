@@ -149,7 +149,7 @@ from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 #    pvSource = 'offlineSlimmedPrimaryVertices4D'
 #else: 
 #    pvSource = 'offlineSlimmedPrimaryVertices'
-pvSource = cms.InputTag("offlineSlimmedPrimaryVertices")
+pvSource = "offlineSlimmedPrimaryVertices"
 if usePuppi:
     jet_collection = 'slimmedJetsPuppi'
 else:

@@ -26,6 +26,9 @@
 
 #include <cmath>
 
+#include<iostream>
+#include<fstream>
+
 class TrackInfoBuilder{
 public:
   TrackInfoBuilder(edm::ESHandle<TransientTrackBuilder> & build):
@@ -241,6 +244,7 @@ bool ntuple_SV::compareDxyDxyErr(const reco::VertexCompositePtrCandidate &sva,co
 //bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll){
 bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll, float EventTime){
 
+    //std::ofstream outfile_SV("/eos/home-z/zhengz/ntuple_SV_output.txt", std::ios::app);
     const float jet_uncorr_e=jet.correctedJet("Uncorrected").energy();
     const reco::Vertex & pv =    vertices()->at(0);
     math::XYZVector jetDir = jet.momentum().Unit();
@@ -278,12 +282,26 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
     int  nSV = -2;
 
     const reco::CandSecondaryVertexTagInfo *candSVTagInfo = jet.tagInfoCandSecondaryVertex("pfInclusiveSecondaryVertexFinder");//The vertex finder can changed!
-    if ( candSVTagInfo != nullptr ) nSV = candSVTagInfo->nVertices();
-    if ( nSV > 0 && candSVTagInfo->vertexTracks().size() == 0 ) nSV = -1;
-    // fill teh SV timing
+    if ( candSVTagInfo != nullptr ) {
+	nSV = candSVTagInfo->nVertices();}
+	//outfile_SV<<"nSV = candSVTagInfo->nVertices()="<<nSV<<std::endl;}
+    if ( nSV > 0 && candSVTagInfo->vertexTracks().size() == 0 ) {
+	nSV = -1;}
+	//outfile_SV<<"candSVTagInfo->vertexTracks().size() == 0,nSV= "<<nSV<<std::endl;}
 
+    //outfile_SV<<"nSV="<<nSV<<std::endl;
+    // fill teh SV timing
+    
+    /*int count_loop_2 =0;
+    int count_if_1 =0;
+    int count_rej_7 =0;
+    int count_rej_8 =0;
+    int valid_time_num =0;*/
     for (const reco::VertexCompositePtrCandidate &sv : cpvtx) {
 //$$
+       //count_loop_2 ++;
+       //int count_loop_1 =0;
+       //int count_rej_6=0;
 // get the vertex time, matching VertexCompositePtrCandidate and tagInfoCandSecondaryVertex ...
             float vertex_time       = 0;
             float vertex_timeerror  = 0;
@@ -292,24 +310,39 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 	    float vertex_timeWeight = 0;
 
             if ( nSV > 0 && sv.pt() > 0. ) {
+		//count_if_1 ++;
 	      for (unsigned int isv=0; isv<candSVTagInfo->nVertices(); ++isv) {
+		//count_loop_1 ++;
 	        float dSVpt  = TMath::Abs(candSVTagInfo->secondaryVertex(isv).pt() / sv.pt() - 1.);
                 float dSVeta = TMath::Abs(candSVTagInfo->secondaryVertex(isv).eta() - sv.eta());
                 float dSVphi = TMath::Abs(candSVTagInfo->secondaryVertex(isv).phi() - sv.phi());
 	        if (dSVphi > 3.141593 ) dSVphi -= 2.*3.141593;
-	      if (!(dSVpt < 0.01 && dSVeta < 0.01 && dSVphi < 0.01)) continue;
+	        //if (!(dSVpt < 0.01 && dSVeta < 0.01 && dSVphi < 0.01)){count_rej_6 ++;continue;}
+		if (!(dSVpt < 0.01 && dSVeta < 0.01 && dSVphi < 0.01))continue;
 //   std::cout << "  => matched sv " << sv_num_ << " to " << isv << std::endl;
 
 	        for (unsigned int it=0; it<candSVTagInfo->nVertexTracks(isv); ++it) {
-
+                  /*int count_if_0 = 0;
+		  int count_rej_1 = 0;
+		  int count_rej_2 = 0;
+		  int count_rej_3 = 0;
+		  int count_rej_4 = 0;
+		  int count_rej_5 = 0;
+		  int count_rej_0 =0;
+		  int count_loop_0 =0;*/
                   for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++) {
+                    //count_loop_0 ++;
                     const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
-                  if ( !PackedCandidate ) continue;
+                  //if ( !PackedCandidate ) {count_rej_5 ++;continue;}
+                  if ( !PackedCandidate )continue;
+		  //if ( PackedCandidate->charge() == 0 ){count_rej_4 ++;continue;}
                   if ( PackedCandidate->charge() == 0 ) continue;
-                    auto track = PackedCandidate->bestTrack();
-                  if ( !track ) continue;
-	          if ( candSVTagInfo->vertexTracks(isv)[it]->charge() != track->charge() ) continue;
-                    //float track_time      = track->t0();
+		  auto track = PackedCandidate->bestTrack();
+                  //if ( !track ) {count_rej_3 ++; continue;}
+		  if ( !track ) continue;
+	          //if ( candSVTagInfo->vertexTracks(isv)[it]->charge() != track->charge() ){count_rej_2 ++;continue;}
+                  if ( candSVTagInfo->vertexTracks(isv)[it]->charge() != track->charge() )continue;  
+		    //float track_time      = track->t0();
                     //float track_timeError = track->covt0t0();
                     float cand_time = PackedCandidate->time();
                     float cand_timeError = PackedCandidate->timeError(); 
@@ -318,20 +351,25 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
                     float track_pt    = track->pt();
                     float time_weight = track_pt * track_pt;
 
-		  if (!( cand_timeError > 0. && abs(cand_time) < 1 )) continue;
-
+		  //if (!( cand_timeError > 0. && abs(cand_time) < 1 )){count_rej_1 ++; continue;}
+                  if (!( cand_timeError > 0. && abs(cand_time) < 1 ))  continue;
 	            float dpt  = TMath::Abs(candSVTagInfo->vertexTracks(isv)[it]->pt()  / track->pt() - 1.);
                     float deta = TMath::Abs(candSVTagInfo->vertexTracks(isv)[it]->eta() - track->eta());
                     float dphi = TMath::Abs(candSVTagInfo->vertexTracks(isv)[it]->phi() - track->phi());
 	            if (dphi > 3.141593 ) dphi -= 2.*3.141593;
 	            if (dpt < 0.01 && deta < 0.01 && dphi < 0.01) {
+		      //count_if_0 ++;
                       vertex_timeNtk    += 1;
 		      vertex_timeWeight += time_weight;
 		      vertex_timeerror  += cand_timeError * cand_timeError * time_weight * time_weight;
                       vertex_time       += cand_time * time_weight;
 //   std::cout << "  => matched track " << it << " to " << i << " time " << cand_time << std::endl;
 	            }
+		    //else{count_rej_0 ++;}
 		  } // end loop on all tracks in jet
+		  //outfile_SV<<"count_loop_0="<<count_loop_0<<std::endl;
+		  //outfile_SV<<"count_rej="<<count_rej_0<<" "<<count_rej_1<<" "<<count_rej_2<<" "<<count_rej_3<<" "<<count_rej_4<<" "<<count_rej_5<<std::endl;
+		  //outfile_SV<<"count_if_0="<<count_if_0<<std::endl;
 		} // end loop on tracks from SV in jet
 	      } // end loop on SVs in jet
               if ( vertex_timeNtk > 0 ) {
@@ -339,6 +377,7 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 		vertex_timeerror = sqrt(vertex_timeerror)/vertex_timeWeight ;
 	      }
               else{
+	      //count_rej_7 ++;
     	      vertex_time = -1;
               vertex_timeerror= -1;
               }
@@ -350,15 +389,18 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
               }
 	    }
 	    else {
+        //count_rej_8 ++;
         vertex_time = -1;
         vertex_timeerror = -1;
 	vertex_timesig = -1000;
         }
+	//outfile_SV<<"count_loop_1="<<count_loop_1<<"  count_rej_6="<<count_rej_6<<std::endl;
 
 //   std::cout << " NTuple sv " << sv_num_ << " pt eta phi " << sv.pt() << " " << sv.eta() << " " << sv.phi()
 //             << " time " << vertex_time << std::endl;
 
             sv_time_[sv_num_] = vertex_time;
+	    //if(vertex_time > -1){valid_time_num ++;}
             sv_time_error_[sv_num_] = vertex_timeerror;
             sv_time_ntrks_[sv_num_] = vertex_timeNtk;
 	    sv_time_sig_[sv_num_] = vertex_timesig;
@@ -439,7 +481,13 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
         }
     } // end of looping over the secondary vertices
     nsv_=sv_num_;
-
+    //outfile_SV<<"count_rej_7="<<count_rej_7<<std::endl;
+    //outfile_SV<<"count_rej_8="<<count_rej_8<<std::endl;
+    //outfile_SV<<"count_loop_2="<<count_loop_2<<std::endl;
+    //outfile_SV<<"count_if_1="<<count_if_1<<std::endl<<std::endl;
+    //outfile_SV<<"sv_num="<<nsv_<<std::endl;
+    //outfile_SV<<"valid sv_time number="<<valid_time_num<<std::endl<<std::endl;
+    //outfile_SV.close();
     return true;
 }
 

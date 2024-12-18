@@ -27,6 +27,9 @@
 #include "RecoVertex/VertexTools/interface/VertexDistanceXY.h"
 #include "RecoVertex/VertexPrimitives/interface/ConvertToFromReco.h"
 
+#include<iostream>
+#include<fstream>
+
 class TrackInfoBuilder{
 public:
     TrackInfoBuilder(edm::ESHandle<TransientTrackBuilder> & build):
@@ -235,8 +238,21 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"Cpfcan_pv_time",&Cpfcan_pv_time_, "Cpfcan_pv_time_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_pv_z",&Cpfcan_pv_z_, "Cpfcan_pv_z_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_z",&Cpfcan_z_, "Cpfcan_z_[n_Cpfcand_]/F");
-
+    
+    addBranch(tree,"Cpfcan_trk_pt",&Cpfcan_trk_pt_, "Cpfcan_trk_pt_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_px",&Cpfcan_trk_px_, "Cpfcan_trk_px_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_py",&Cpfcan_trk_py_, "Cpfcan_trk_py_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_pz",&Cpfcan_trk_pz_, "Cpfcan_trk_pz_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_p",&Cpfcan_trk_p_, "Cpfcan_trk_p_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_p2",&Cpfcan_trk_p2_, "Cpfcan_trk_p2_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_beta",&Cpfcan_trk_beta_, "Cpfcan_trk_beta_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_x",&Cpfcan_trk_x_, "Cpfcan_trk_x_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_y",&Cpfcan_trk_y_, "Cpfcan_trk_y_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_trk_z",&Cpfcan_trk_z_, "Cpfcan_trk_z_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_eta",&Cpfcan_trk_eta_, "Cpfcan_trk_eta_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_phi",&Cpfcan_trk_phi_, "Cpfcan_trk_phi_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_trk_theta",&Cpfcan_trk_theta_, "Cpfcan_trk_theta_[n_Cpfcand_]/F");
+    
     addBranch(tree,"Cpfcan_trk_time",&Cpfcan_trk_time_, "Cpfcan_trk_time_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_trk_timeerror",&Cpfcan_trk_timeerror_, "Cpfcan_trk_timeerror_[n_Cpfcand_]/F");
 
@@ -384,7 +400,7 @@ void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 //use either of these functions
 
 bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll, float EventTime){
-
+    
     float etasign = 1.;
     if (jet.eta()<0) etasign =-1.;
     math::XYZVector jetDir = jet.momentum().Unit();
@@ -400,7 +416,6 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     const float jet_uncorr_e=jet.correctedJet("Uncorrected").energy();
 
     TrackInfoBuilder trackinfo(builder);
-    std::cout<<"numberOfDaughters="<< jet.numberOfDaughters()<<std::endl;//2024.12.2
     //create collection first, to be able to do some sorting
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
         const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
@@ -427,16 +442,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 		sortedchargedindices=sorting::invertSortingVector(sortedcharged);
 		sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
 	
-    int n_jetDaughter = 0;//2024.12.2
-    int n_ChargedCand_reject = 0; //2024.12.2
-    int n_ChargedCand = 0; //2024.12.2
-    int n_iftrack_reject = 0; //2024.12.2
-    int n_iftrack = 0; //2024.12.2
-    int n_PackedCand_reject =0;
-    int n_PackedCand =0;
     
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
-	n_jetDaughter ++; //2024.12.2
         const pat::PackedCandidate* PackedCandidate_ = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
         //const auto& PackedCandidate_=s.get();
         if(!PackedCandidate_) continue;
@@ -471,8 +478,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	  pdgid_ = 7.0;
 	}
 
-        if(PackedCandidate_->charge()!=0 ){ //2024.12.2
-	    n_ChargedCand ++; //2024.12.2
+        if(PackedCandidate_->charge()!=0 ){ 
             size_t fillntupleentry= sortedchargedindices.at(i);
             if(fillntupleentry>=max_pfcand_) continue;
 
@@ -526,10 +532,24 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_z_[fillntupleentry] = PackedCandidate_->p4().z();
             Cpfcan_puppiw_[fillntupleentry] = PackedCandidate_->puppiWeight();
             
-	    Cpfcan_trk_z_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->vz() : -999;
-            Cpfcan_trk_time_[fillntupleentry] = (PackedCandidate_->bestTrack()) ? PackedCandidate_->bestTrack()->t0() : -1;
-            Cpfcan_trk_timeerror_[fillntupleentry] = (PackedCandidate_->bestTrack()!=nullptr) ? PackedCandidate_->bestTrack()->covt0t0() : -1;
+            Cpfcan_trk_pt_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->pt() : -999;
+            Cpfcan_trk_px_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->px() : -999;
+	    Cpfcan_trk_py_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->py() : -999;
+	    Cpfcan_trk_pz_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->pz() : -999;
+	    Cpfcan_trk_p_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->p() : -999; /// momentum vector magnitude
+	    Cpfcan_trk_p2_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->p2() : -999; /// momentum vector magnitude square
+	    Cpfcan_trk_beta_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->beta() : -999; /// velocity at the reference point in natural units
 
+	    Cpfcan_trk_x_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->vx() : -999;
+	    Cpfcan_trk_y_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->vy() : -999;
+	    Cpfcan_trk_z_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->vz() : -999;
+	    Cpfcan_trk_eta_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->eta() : -999;
+	    Cpfcan_trk_phi_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->phi() : -999;
+	    Cpfcan_trk_theta_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->theta() : -999;
+
+            Cpfcan_trk_time_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->t0() : -1;
+            Cpfcan_trk_timeerror_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->covt0t0() : -1;
+            
 
             /*
             reco::Track::CovarianceMatrix myCov = PseudoTrack.covariance ();
@@ -576,16 +596,11 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             auto track = PackedCandidate_->bestTrack();
 	    //if ( track && EventTime > -1 ) {
 
-	    //2024.12.2
-	    if (!track){n_iftrack_reject ++;}
-	    else{
-	      n_iftrack ++;  
+	    if (track){
 	      if ( PackedCandidate_->timeError()>0. && abs(PackedCandidate_->time()) < 1 ) {  
-		n_PackedCand ++;
 		cand_time = PackedCandidate_->time();
                 cand_timeError = PackedCandidate_->timeError();
 	      }
-	      else{n_PackedCand_reject++;}
 	    }
             Cpfcan_time_[fillntupleentry] = cand_time;
             Cpfcan_timeerror_[fillntupleentry] = cand_timeError;
@@ -878,7 +893,6 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             }
         }
         else{// neutral candidates
-            n_ChargedCand_reject ++; //2024.12.2
             
             size_t fillntupleentry= sortedneutralsindices.at(i);
             if(fillntupleentry>=max_pfcand_) continue;
@@ -907,26 +921,6 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         }
 
     } // end loop over jet.numberOfDaughters()
-
-    /*
-    std::cout <<"numbers charged/neutrals"<<std::endl;
-    std::cout << n_Cpfcand_ << std::endl;
-    std::cout << n_Npfcand_ << std::endl;
-    std::cout <<"charged IPs"<<std::endl;
-    for(size_t i=0;i<n_Cpfcand_;i++){
-        std::cout << Cpfcan_BtagPf_trackSip2dSig_[i] << " " << Npfcan_drminsv_[i] << " " << Npfcan_ptrel_[i]<<std::endl;
-    }
-    std::cout <<"neutrals minDR"<<std::endl;
-    for(size_t i=0;i<n_Npfcand_;i++){
-        std::cout << Npfcan_drminsv_[i] << " " << Npfcan_ptrel_[i]<<std::endl;
-    }
-     */
-    
-    std::cout<<"n_ChargedCand_reject="<<n_ChargedCand_reject<<"    n_ChargedCand="<<n_ChargedCand<<std::endl;	
-    std::cout<<"n_iftrack_reject="<<n_iftrack_reject<<"    n_iftrack="<<n_iftrack<<std::endl;;
-    std::cout<<"n_PackedCand_reject="<<n_PackedCand_reject<<"    n_PackedCand="<<n_PackedCand<<std::endl; 
-    std::cout<<"n_jetDaughter=="<<n_jetDaughter<<std::endl<<std::endl;
-
 
     nCpfcand_=n_Cpfcand_;
     nNpfcand_=n_Npfcand_;
