@@ -215,6 +215,8 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"Cpfcan_puppiw",&Cpfcan_puppiw_,"Cpfcan_puppiw_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_dxy",&Cpfcan_dxy_,"Cpfcan_dxy_[n_Cpfcand_]/F");
 
+    addBranch(tree,"Cpfcan_dtime", &Cpfcan_dtime_,"Cpfcan_dtime_[n_Cpfcand_]/F");
+
     addBranch(tree,"Cpfcan_dxyerrinv",&Cpfcan_dxyerrinv_,"Cpfcan_dxyerrinv_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_dxysig",&Cpfcan_dxysig_,"Cpfcan_dxysig_[n_Cpfcand_]/F");
 
@@ -499,7 +501,9 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_dxy_[fillntupleentry] = catchInfsAndBound(fabs(PackedCandidate_->dxy()),0,-50,50);
 	    Cpfcan_firsthit_[fillntupleentry] = PackedCandidate_->firstHit();
 
-            Cpfcan_dxyerrinv_[fillntupleentry]= PackedCandidate_->hasTrackDetails() ? catchInfsAndBound(1/PackedCandidate_->dxyError(),0,-1, 10000.) : -1;
+            Cpfcan_dtime_[fillntupleentry] = PackedCandidate_->dtimeAssociatedPV();
+	    
+	    Cpfcan_dxyerrinv_[fillntupleentry]= PackedCandidate_->hasTrackDetails() ? catchInfsAndBound(1/PackedCandidate_->dxyError(),0,-1, 10000.) : -1;
 
             Cpfcan_dxysig_[fillntupleentry]= PackedCandidate_->hasTrackDetails() ? catchInfsAndBound(fabs(PackedCandidate_->dxy()/PackedCandidate_->dxyError()),0.,-2000,2000) : 0.;
 
@@ -549,7 +553,6 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
             Cpfcan_trk_time_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->t0() : -1;
             Cpfcan_trk_timeerror_[fillntupleentry] = PackedCandidate_->bestTrack() ? PackedCandidate_->bestTrack()->covt0t0() : -1;
-            
 
             /*
             reco::Track::CovarianceMatrix myCov = PseudoTrack.covariance ();

@@ -69,6 +69,8 @@ private:
     float  Cpfcan_VTX_ass_[max_pfcand_];
     float  Cpfcan_firsthit_[max_pfcand_];
 
+    float  Cpfcan_dtime_[max_pfcand_];
+    
     float  Cpfcan_fromPV_[max_pfcand_];
 
     float Cpfcan_vertexChi2_[max_pfcand_];
