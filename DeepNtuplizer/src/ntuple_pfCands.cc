@@ -9,6 +9,8 @@
 #include "../interface/ntuple_pfCands.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "../interface/sorting_modules.h"
 
 
@@ -236,8 +238,11 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"Cpfcan_vertex_phirel",&Cpfcan_vertex_phirel_,"Cpfcan_vertex_phirel_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_vertex_etarel",&Cpfcan_vertex_etarel_,"Cpfcan_vertex_etarel_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_vertex_time",&Cpfcan_vertex_time_, "Cpfcan_vertex_time_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_vertex_time2",&Cpfcan_vertex_time2_, "Cpfcan_vertex_time2_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_vertex_z",&Cpfcan_vertex_z_, "Cpfcan_vertex_z_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_pv_time",&Cpfcan_pv_time_, "Cpfcan_pv_time_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_rel_time",&Cpfcan_rel_time_, "Cpfcan_rel_time_[n_Cpfcand_]/F");
+    addBranch(tree,"Cpfcan_time_mask",&Cpfcan_time_mask_, "Cpfcan_time_mask_[n_Cpfcand_]/I");
     addBranch(tree,"Cpfcan_pv_z",&Cpfcan_pv_z_, "Cpfcan_pv_z_[n_Cpfcand_]/F");
     addBranch(tree,"Cpfcan_z",&Cpfcan_z_, "Cpfcan_z_[n_Cpfcand_]/F");
     
@@ -412,6 +417,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     //float track_timeerror = -1;
     float cand_time = -1;
     float cand_timeError = -1;
+    float relative_time = 0;
+    int cand_time_mask = 0;
     std::vector<sorting::sortingClass<size_t> > sortedcharged, sortedneutrals;
 
     const float jet_uncorr_pt=jet.correctedJet("Uncorrected").pt();
@@ -530,6 +537,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_vertex_etarel_[fillntupleentry]=etasign*(PackedCandidate_->vertex().eta()-jet.eta());
             Cpfcan_vertexRef_mass_[fillntupleentry]=PackedCandidate_->vertexRef()->p4().M();
             Cpfcan_vertex_time_[fillntupleentry]=PackedCandidate_->vertexRef()->t();
+	    Cpfcan_vertex_time2_[fillntupleentry]=vertices()->at(0).t();
             Cpfcan_vertex_z_[fillntupleentry]=PackedCandidate_->vertexRef()->z();
             Cpfcan_pv_time_[fillntupleentry]=PackedCandidate_->dtime();
             Cpfcan_pv_z_[fillntupleentry]=pv.z();
@@ -596,6 +604,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_BtagPf_trackJetDistSig_[fillntupleentry] =catchInfsAndBound(trackinfo.getTrackJetDistSig(),0,-1,1e5 );
             cand_time = -1.;
             cand_timeError = -1;
+	    relative_time = 0;
+	    cand_time_mask = 0; // for valid time it is 1, for invalid it is 0
             auto track = PackedCandidate_->bestTrack();
 	    //if ( track && EventTime > -1 ) {
 
@@ -603,10 +613,15 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	      if ( PackedCandidate_->timeError()>0. && abs(PackedCandidate_->time()) < 1 ) {  
 		cand_time = PackedCandidate_->time();
                 cand_timeError = PackedCandidate_->timeError();
+		relative_time = cand_time - vertices()->at(0).t();
+		cand_time_mask = 1;
 	      }
 	    }
             Cpfcan_time_[fillntupleentry] = cand_time;
             Cpfcan_timeerror_[fillntupleentry] = cand_timeError;
+	    Cpfcan_rel_time_[fillntupleentry] = relative_time;
+	    Cpfcan_time_mask_[fillntupleentry] = cand_time_mask;
+
 	    if(cand_timeError > 0){
 	      Cpfcan_timesig_[fillntupleentry] = cand_time/cand_timeError;
 	    }

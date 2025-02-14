@@ -10,6 +10,9 @@
 #include <vector>
 #include <algorithm>
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 #include <cmath>
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 
@@ -94,6 +97,8 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree, "Jet_timeError", &jet_timeError_, "Jet_timeError/f");
     addBranch(tree, "Jet_timeNtk", &jet_timeNtk_, "Jet_timeNtk/f");
     addBranch(tree, "Jet_timesig", &jet_timesig_, "Jet_timesig/f");
+    addBranch(tree, "Jet_rel_time", &jet_rel_time_, "Jet_rel_time/f");
+    addBranch(tree, "Jet_time_mask", &jet_time_mask_, "Jet_time_mask/I");
     
     addBranch(tree, "genvtx_z", &genvtx_z_, "genvtx_z/f");
     addBranch(tree, "genvtx_time", &genvtx_time_, "genvtx_time_/f");
@@ -632,6 +637,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     float jet_timeNtk    = 0;
     float jet_timesig    = 0;
     float jet_timeWeight = 0;
+    float jet_rel_time   = 0;
+    int   jet_time_mask  = 0;
 
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++) {
       const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
@@ -640,6 +647,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         auto track = PackedCandidate->bestTrack();
       if ( !track ) continue;
         float cand_time = PackedCandidate->time();
+	float cand_rel_time = cand_time - vertices()->at(0).t();
         float cand_timeError = PackedCandidate->timeError();
 	
 	//time_weight
@@ -651,25 +659,31 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	  jet_timeWeight += time_weight;
           jet_timeError += cand_timeError * cand_timeError * time_weight * time_weight;
           jet_time += cand_time * time_weight;
+	  jet_rel_time += cand_rel_time * time_weight;
         }
     }
     if ( jet_timeNtk > 0 ) {
         jet_time = jet_time / jet_timeWeight;
+	jet_rel_time = jet_rel_time / jet_timeWeight;
 	jet_timeError = sqrt(jet_timeError) / jet_timeWeight;
+	jet_time_mask = 1; //valid time
     }
     else{
 	jet_time = -1;
+	jet_rel_time = 0;
 	jet_timeError = -1;
     }
     if ( jet_timeError > 0 ) {
         jet_timesig = jet_time / jet_timeError;
     }
-    else jet_timesig = -1000;
+    else jet_timesig = -999;
 
     jet_time_=jet_time;
+    jet_rel_time_ = jet_rel_time;
     jet_timeNtk_=jet_timeNtk;
     jet_timeError_=jet_timeError;
     jet_timesig_=jet_timesig;
+    jet_time_mask_ = jet_time_mask;
 
     genDecay_ = -1.;
 

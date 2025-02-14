@@ -81,11 +81,14 @@ private:
     float Cpfcan_vertex_etarel_[max_pfcand_];
     float Cpfcan_vertexRef_mass_[max_pfcand_];
     float Cpfcan_vertex_time_[max_pfcand_];
+    float Cpfcan_vertex_time2_[max_pfcand_];
     float Cpfcan_vertex_z_[max_pfcand_];
 
     float Cpfcan_pv_time_[max_pfcand_];
     float Cpfcan_pv_z_[max_pfcand_];
     float Cpfcan_z_[max_pfcand_];
+    float Cpfcan_rel_time_[max_pfcand_];
+    int   Cpfcan_time_mask_[max_pfcand_]; // for valid time it is 1, for invalid it is 0
     
     float  Cpfcan_trk_pt_[max_pfcand_];
     float  Cpfcan_trk_px_[max_pfcand_];

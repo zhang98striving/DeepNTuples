@@ -305,6 +305,8 @@ public:
     float jet_timeError_;
     float jet_timeNtk_;
     float jet_timesig_;
+    float jet_rel_time_;
+    int   jet_time_mask_;
 };
 
 
