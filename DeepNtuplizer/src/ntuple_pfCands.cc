@@ -417,7 +417,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     //float track_timeerror = -1;
     float cand_time = -1;
     float cand_timeError = -1;
-    float relative_time = 0;
+    float relative_time = -1;
     int cand_time_mask = 0;
     std::vector<sorting::sortingClass<size_t> > sortedcharged, sortedneutrals;
 
@@ -604,7 +604,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_BtagPf_trackJetDistSig_[fillntupleentry] =catchInfsAndBound(trackinfo.getTrackJetDistSig(),0,-1,1e5 );
             cand_time = -1.;
             cand_timeError = -1;
-	    relative_time = 0;
+	    relative_time = -1;
 	    cand_time_mask = 0; // for valid time it is 1, for invalid it is 0
             auto track = PackedCandidate_->bestTrack();
 	    //if ( track && EventTime > -1 ) {
