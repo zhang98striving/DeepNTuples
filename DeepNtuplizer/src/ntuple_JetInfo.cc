@@ -670,7 +670,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     }
     else{
 	jet_time = -1;
-	jet_rel_time = -1;
+	jet_rel_time = -2;
 	jet_timeError = -1;
     }
     if ( jet_timeError > 0 ) {
